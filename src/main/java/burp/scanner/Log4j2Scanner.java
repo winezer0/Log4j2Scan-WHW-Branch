@@ -604,12 +604,11 @@ public class Log4j2Scanner implements IScannerCheck {
     }
 
     private IHttpRequestResponse sendRequest(IHttpService httpService, byte[] rawRequest) {
+        System.out.println(String.format("SET ENABLE_EX_REQUEST %s -> %s",Config.getBoolean(Config.ENABLE_EX_REQUEST, true), httpService.getHost()));
         if (Config.getBoolean(Config.ENABLE_EX_REQUEST, true)) {
-            System.out.println(String.format("ENABLE_EX_REQUEST True -> %s", httpService.getHost()));
             HttpUtils.RawRequest(httpService, rawRequest, parent.helpers.analyzeRequest(httpService, rawRequest));
             return null;
         }
-        System.out.println(String.format("ENABLE_EX_REQUEST False -> %s", httpService.getHost()));
         return parent.callbacks.makeHttpRequest(httpService, rawRequest);
     }
 
