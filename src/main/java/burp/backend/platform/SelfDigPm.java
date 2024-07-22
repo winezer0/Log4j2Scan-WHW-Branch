@@ -79,6 +79,11 @@ public class SelfDigPm implements IBackend {
     }
 
     @Override
+    public String getNewPayload(String reqDomain) {
+        return reqDomain + Utils.GetRandomString(5).toLowerCase() + "." + userDomain;
+    }
+
+    @Override
     public boolean CheckResult(String domain) {
         try {
             return cache.contains(domain);

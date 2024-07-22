@@ -78,6 +78,11 @@ public class DnslogCN implements IBackend {
         return Utils.getCurrentTimeMillis() + Utils.GetRandomString(5) + "." + rootDomain;
     }
 
+    @Override
+    public String getNewPayload(String reqDomain) {
+        return reqDomain + Utils.GetRandomString(5) + "." + rootDomain;
+    }
+
     public boolean flushCache() {
         try {
             Response resp = client.newCall(HttpUtils.GetDefaultRequest(platformUrl + "getrecords.php?t=0." + Math.abs(Utils.getRandomLong())).build()).execute();

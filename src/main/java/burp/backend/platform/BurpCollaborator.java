@@ -21,13 +21,21 @@ public class BurpCollaborator implements IBackend {
     public String getName() {
         return "BurpCollaborator";
     }
+
     @Override
-    public String[] batchCheck(String[] payloads) {
-        return new String[0];
+    public String getNewPayload(String reqDomain)  {
+        return bcContext.generatePayload(true);
     }
+
     @Override
     public String getNewPayload() {
         return bcContext.generatePayload(true);
+    }
+
+
+    @Override
+    public String[] batchCheck(String[] payloads) {
+        return new String[0];
     }
 
     @Override

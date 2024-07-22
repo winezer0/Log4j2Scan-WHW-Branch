@@ -121,6 +121,11 @@ public class RevSuitRMI implements IBackend {
         return appendBefore(rmiFlag + "/" + Utils.GetRandomString(10));
     }
 
+    @Override
+    public String getNewPayload(String reqDomain)  {
+        return appendBefore(rmiFlag + "/" + reqDomain);
+    }
+
     public String appendBefore(String randomStr) {
         return rootRMIUrl + randomStr;
     }

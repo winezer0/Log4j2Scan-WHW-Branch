@@ -285,6 +285,7 @@ public class Log4j2Scanner implements IScannerCheck {
     }
 
     private Map<String, ScanItem> crazyFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
+        String reqHost = Utils.getHost(baseRequestResponse);
         List<String> headers = req.getHeaders();
         Map<String, ScanItem> domainMap = new HashMap<>();
         for (IPOC poc : getSupportedPOCs()) {
@@ -301,7 +302,7 @@ public class Log4j2Scanner implements IScannerCheck {
                         if (Arrays.stream(HEADER_BLACKLIST).noneMatch(h -> h.equalsIgnoreCase(header.Name))) {
                             List<String> needSkipheader = guessHeaders.stream().filter(h -> h.equalsIgnoreCase(header.Name)).collect(Collectors.toList());
                             needSkipheader.forEach(guessHeaders::remove);
-                            String tmpDomain = backend.getNewPayload();
+                            String tmpDomain = backend.getNewPayload(reqHost);
                             header.Value = poc.generate(tmpDomain);
                             if (header.Name.equalsIgnoreCase("accept")) {
                                 header.Value = "*/*;" + header.Value;
@@ -311,7 +312,7 @@ public class Log4j2Scanner implements IScannerCheck {
                         }
                     }
                     for (String headerName : guessHeaders) {
-                        String tmpDomain = backend.getNewPayload();
+                        String tmpDomain = backend.getNewPayload(reqHost);
                         tmpHeaders.add(String.format("%s: %s", headerName, poc.generate(tmpDomain)));
                         domainHeaderMap.put(headerName, tmpDomain);
                     }
@@ -323,7 +324,7 @@ public class Log4j2Scanner implements IScannerCheck {
                 tmpRawRequest = parent.helpers.buildHttpMessage(tmpHeaders, rawBody);
                 IRequestInfo tmpReqInfo = parent.helpers.analyzeRequest(tmpRawRequest);
                 for (IParameter param : tmpReqInfo.getParameters()) {
-                    String tmpDomain = backend.getNewPayload();
+                    String tmpDomain = backend.getNewPayload(reqHost);
                     String exp = poc.generate(tmpDomain);
                     boolean inHeader = false;
                     switch (param.getType()) {
@@ -400,6 +401,7 @@ public class Log4j2Scanner implements IScannerCheck {
     }
 
     private Map<String, ScanItem> headerFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
+        String reqHost = Utils.getHost(baseRequestResponse);
         List<String> headers = req.getHeaders();
         Map<String, ScanItem> domainMap = new HashMap<>();
         try {
@@ -412,7 +414,7 @@ public class Log4j2Scanner implements IScannerCheck {
                     needSkipheader.forEach(guessHeaders::remove);
                     for (IPOC poc : getSupportedPOCs()) {
                         List<String> tmpHeaders = new ArrayList<>(headers);
-                        String tmpDomain = backend.getNewPayload();
+                        String tmpDomain = backend.getNewPayload(reqHost);
                         header.Value = poc.generate(tmpDomain);
                         tmpHeaders.set(i, header.toString());
                         byte[] tmpRawRequest = helper.buildHttpMessage(tmpHeaders, Arrays.copyOfRange(rawRequest, req.getBodyOffset(), rawRequest.length));
@@ -428,6 +430,7 @@ public class Log4j2Scanner implements IScannerCheck {
     }
 
     private Map<String, ScanItem> headerAdd(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
+        String reqHost = Utils.getHost(baseRequestResponse);
         List<String> headers = req.getHeaders();
         Map<String, ScanItem> domainMap = new HashMap<>();
         try {
@@ -437,7 +440,7 @@ public class Log4j2Scanner implements IScannerCheck {
                 List<String> tmpHeaders = new ArrayList<>(headers);
                 Map<String, String> domainHeaderMap = new HashMap<>();
                 for (String headerName : guessHeaders) {
-                    String tmpDomain = backend.getNewPayload();
+                    String tmpDomain = backend.getNewPayload(reqHost);
                     tmpHeaders.add(String.format("%s: %s", headerName, poc.generate(tmpDomain)));
                     domainHeaderMap.put(headerName, tmpDomain);
                 }
@@ -455,6 +458,7 @@ public class Log4j2Scanner implements IScannerCheck {
     }
 
     private Map<String, ScanItem> badJsonFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
+        String reqHost = Utils.getHost(baseRequestResponse);
         Map<String, ScanItem> domainMap = new HashMap<>();
         boolean canFuzz = false;
         List<String> rawHeaders = req.getHeaders();
@@ -469,7 +473,7 @@ public class Log4j2Scanner implements IScannerCheck {
         }
         if (canFuzz) {
             for (IPOC poc : getSupportedPOCs()) {
-                String tmpDomain = backend.getNewPayload();
+                String tmpDomain = backend.getNewPayload(reqHost);
                 String exp = poc.generate(tmpDomain);
                 String finalPaylad = String.format("{\"%s\":%d%s%d}",   //try to create a bad-json.
                         Utils.GetRandomString(Utils.GetRandomNumber(3, 10)),
@@ -486,12 +490,13 @@ public class Log4j2Scanner implements IScannerCheck {
     }
 
     private Map<String, ScanItem> paramsFuzz(IHttpRequestResponse baseRequestResponse, IRequestInfo req) {
+        String reqHost = Utils.getHost(baseRequestResponse);
         Map<String, ScanItem> domainMap = new HashMap<>();
         byte[] rawRequest = baseRequestResponse.getRequest();
         for (IParameter param : req.getParameters()) {
             for (IPOC poc : getSupportedPOCs()) {
                 try {
-                    String tmpDomain = backend.getNewPayload();
+                    String tmpDomain = backend.getNewPayload(reqHost);
                     byte[] tmpRawRequest;
                     String exp = poc.generate(tmpDomain);
                     boolean inHeader = false;
@@ -600,9 +605,11 @@ public class Log4j2Scanner implements IScannerCheck {
 
     private IHttpRequestResponse sendRequest(IHttpService httpService, byte[] rawRequest) {
         if (Config.getBoolean(Config.ENABLE_EX_REQUEST, true)) {
+            System.out.println(String.format("ENABLE_EX_REQUEST True -> %s", httpService.getHost()));
             HttpUtils.RawRequest(httpService, rawRequest, parent.helpers.analyzeRequest(httpService, rawRequest));
             return null;
         }
+        System.out.println(String.format("ENABLE_EX_REQUEST False -> %s", httpService.getHost()));
         return parent.callbacks.makeHttpRequest(httpService, rawRequest);
     }
 

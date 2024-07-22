@@ -46,6 +46,11 @@ public class Eyes implements IBackend {
     }
 
     @Override
+    public String getNewPayload(String reqDomain) {
+        return reqDomain + Utils.GetRandomString(5).toLowerCase() + "." + rootDomain;
+    }
+
+    @Override
     public boolean CheckResult(String payload) {
         try {
             String prefixDomain = this.rootDomain.split("\\.")[0];

@@ -62,6 +62,11 @@ public class GoDnslog implements IBackend {
     }
 
     @Override
+    public String getNewPayload(String reqDomain) {
+        return reqDomain + Utils.GetRandomString(5).toLowerCase() + "." + rootDomain;
+    }
+
+    @Override
     public String[] batchCheck(String[] payloads) {
         return new String[0];
     }

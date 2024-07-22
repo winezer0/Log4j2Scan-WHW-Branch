@@ -113,6 +113,11 @@ public class RevSuitDNS implements IBackend {
     }
 
     @Override
+    public String getNewPayload(String reqDomain) {
+        return (reqDomain + Utils.GetRandomString(5) + "." + dnsFlag + "." + rootDomain).toLowerCase();
+    }
+
+    @Override
     public boolean CheckResult(String payload) {
         try {
             String resp = request(String.format("revsuit/api/record/dns?page=1&pageSize=5&order=desc&domain=%s", URLEncoder.encode(payload, "utf-8")));

@@ -2,6 +2,7 @@ package burp.utils;
 
 
 import burp.IBurpExtenderCallbacks;
+import burp.IHttpRequestResponse;
 import burp.poc.IPOC;
 
 import java.io.PrintStream;
@@ -135,4 +136,11 @@ public class Utils {
         String dateStr = new SimpleDateFormat("[HH:mm:ss]").format(new Date());
         new PrintStream(Utils.Callback.getStdout()).println(dateStr + "\t" + str);
     }
+
+    public static String getHost(IHttpRequestResponse baseRequestResponse) {
+        String host = baseRequestResponse.getHttpService().getHost();
+        int port = baseRequestResponse.getHttpService().getPort();
+        return String.format("%s_%s", host, port);
+    }
+
 }

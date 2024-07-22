@@ -7,6 +7,8 @@ public interface IBackend {
 
     String getNewPayload();
 
+    String getNewPayload(String reqDomain);
+
     String[] batchCheck(String[] payloads);
 
     boolean CheckResult(String payload);
